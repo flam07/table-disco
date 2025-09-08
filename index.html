@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; script-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;">
+
+  <title>Tables de Multiplication Disco - Version Mobile/Tablet</title>
+  <style>
+  
+ @font-face {
+  font-family: 'Righteous';
+  src: url('fonts/Righteous-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+    /* Styles globaux et fond disco */
+    body {
+      font-family: 'Righteous', cursive;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(45deg, #FF00FF, #00FFFF, #FF00FF, #FFFF00);
+      background-size: 400% 400%;
+      animation: disco-bg 10s ease infinite;
+      color: #fff;
+      text-align: center;
+      overflow-y: auto;
+    }
+    @keyframes disco-bg {
+      0% { background-position: 0% 50% }
+      50% { background-position: 100% 50% }
+      100% { background-position: 0% 50% }
+    }
+    .container {
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 0 30px rgba(255, 0, 255, 0.5), 0 0 60px rgba(0, 255, 255, 0.5);
+      width: 90%;
+      max-width: 600px;
+      position: relative;
+      border: 3px solid #FF00FF;
+      margin: 20px;
+    }
+    h1 {
+      color: #FFFF00;
+      margin-bottom: 20px;
+      font-size: 30px;
+      text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF;
+      animation: text-flicker 2s infinite;
+    }
+    @keyframes text-flicker {
+      0% { text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF; }
+      25% { text-shadow: 0 0 15px #FFFF00, 0 0 25px #FF00FF; }
+      50% { text-shadow: 0 0 10px #00FFFF, 0 0 20px #FFFF00; }
+      75% { text-shadow: 0 0 15px #FF00FF, 0 0 25px #00FFFF; }
+      100% { text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF; }
+    }
+    #level-display {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #FFFF00;
+      font-weight: bold;
+      text-shadow: 0 0 5px #FF00FF;
+    }
+    #score-display {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #00FFFF;
+      text-shadow: 0 0 5px #FFFF00;
+    }
+    #error-display {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #FF00FF;
+      text-shadow: 0 0 5px #00FFFF;
+    }
+    #timer {
+      width: 100%;
+      height: 10px;
+      background-color: #333;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px #00FFFF;
+    }
+    #timer-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #FF00FF, #00FFFF, #FFFF00);
+      background-size: 200% 100%;
+      animation: timer-bg 2s linear infinite;
+      border-radius: 5px;
+      transition: width 0.1s linear;
+    }
+    @keyframes timer-bg {
+      0% { background-position: 0% 50% }
+      100% { background-position: 200% 50% }
+    }
+    /* Zone question : utilisation de transform pour une animation fluide */
+    #question-container {
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 30px;
+      width: 100%;
+      border-bottom: 2px solid #FF00FF;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+    }
+    #question {
+      position: absolute;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 10px;
+      text-shadow: 0 0 10px currentColor;
+      transform: translateY(0);
+      animation: fall 6s linear forwards;
+      left: 0; /* Cette propriété sera écrasée par le JavaScript */
+    }
+    @keyframes fall {
+      from { transform: translateY(0); }
+      to { transform: translateY(150px); }
+    }
+    #answer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+    input {
+      font-family: 'Righteous', cursive;
+      font-size: 24px;
+      padding: 10px;
+      width: 100px;
+      text-align: center;
+      border-radius: 5px;
+      border: 2px solid #FF00FF;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #FFFF00;
+      margin-bottom: 15px;
+      box-shadow: 0 0 10px #00FFFF;
+    }
+    button {
+      font-family: 'Righteous', cursive;
+      background: linear-gradient(45deg, #FF00FF, #00FFFF);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 5px;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+    button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Bouton audio circulaire fixé en haut à droite */
+    .music-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(45deg, #FF00FF, #00FFFF);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .music-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(255,255,255,0.8);
+    }
+
+.admin-modal textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border: 1px solid #FF00FF;
+            font-family: inherit;
+            resize: vertical;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #FFFF00;
+        }
+        
+        .admin-modal .password-container {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-modal .password-container input {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+
+/* Dancefloor disco en bas de l'écran */
+    .disco-floor {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 20vh;
+      background: repeating-conic-gradient(
+        from 0deg,
+        #FF00FF 0deg 30deg,
+        #00FFFF 30deg 60deg,
+        #FFFF00 60deg 90deg,
+        #000000 90deg 120deg
+      );
+      background-size: 60px 60px;
+      z-index: -1;
+      transform: rotateX(60deg);
+      transform-origin: bottom;
+      opacity: 0.8;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: rgba(0, 0, 0, 0.8);
+      border: 3px solid #FF00FF;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 80%;
+      max-height: 80%;
+      overflow-y: auto;
+      position: relative;
+      color: #fff;
+      box-shadow: 0 0 30px #00FFFF, 0 0 60px #FFFF00;
+    }
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      cursor: pointer;
+      color: #FF00FF;
+      text-shadow: 0 0 10px #00FFFF;
+    }
+    .table-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .table-item {
+      padding: 8px;
+      background-color: rgba(255, 0, 255, 0.3);
+      border-radius: 5px;
+      color: #FFFF00;
+      text-shadow: 0 0 5px #00FFFF;
+      border: 1px solid #00FFFF;
+      transition: all 0.3s;
+    }
+    .table-item:hover {
+      transform: scale(1.1);
+      background-color: rgba(0, 255, 255, 0.3);
+    }
+    .success-message {
+      font-size: 26px;
+      color: #FFFF00;
+      font-weight: bold;
+      margin: 30px 0;
+      text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF;
+      animation: disco-pulse 1.5s infinite;
+    }
+    @keyframes disco-pulse {
+      0% { transform: scale(1); text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF; }
+      50% { transform: scale(1.1); text-shadow: 0 0 20px #00FFFF, 0 0 30px #FFFF00; }
+      100% { transform: scale(1); text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF; }
+    }
+    #next-level-btn, #restart-btn {
+      margin-top: 20px;
+      padding: 15px 30px;
+      font-size: 20px;
+      background: linear-gradient(45deg, #FFFF00, #FF00FF);
+    }
+    #restart-btn {
+      background: linear-gradient(45deg, #FF00FF, #00FFFF);
+    }
+    /* Styles pour l'aide visuelle */
+    .help-btn {
+      background: linear-gradient(45deg, #FF33CC, #FFFF00);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 20px;
+      font-family: 'Righteous', cursive;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 15px rgba(255, 255, 0, 0.8);
+      animation: help-btn-pulse 1.5s infinite;
+    }
+    @keyframes help-btn-pulse {
+      0% { box-shadow: 0 0 15px rgba(255, 255, 0, 0.8); transform: scale(1); }
+      50% { box-shadow: 0 0 25px rgba(255, 51, 204, 0.8); transform: scale(1.05); }
+      100% { box-shadow: 0 0 15px rgba(255, 255, 0, 0.8); transform: scale(1); }
+    }
+    .help-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    }
+    .help-content {
+      max-width: 90%;
+      max-height: 90%;
+      padding: 30px;
+      background-color: rgba(0, 0, 0, 0.85);
+      overflow-y: auto;
+    }
+    .visual-help-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    .square-help {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+      background: rgba(255, 0, 255, 0.2);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    }
+    .square-help h3 {
+      color: #FFFF00;
+      margin-bottom: 15px;
+      text-shadow: 0 0 5px #FF00FF;
+    }
+    .square-grid {
+      display: grid;
+      gap: 2px;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 200px;
+    }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .grid-5 { grid-template-columns: repeat(5, 1fr); }
+    .grid-6 { grid-template-columns: repeat(6, 1fr); }
+    .grid-7 { grid-template-columns: repeat(7, 1fr); }
+    .grid-8 { grid-template-columns: repeat(8, 1fr); }
+    .grid-9 { grid-template-columns: repeat(9, 1fr); }
+    .square-cell {
+      aspect-ratio: 1;
+      background: linear-gradient(45deg, #00FFFF, #FF00FF);
+      border-radius: 3px;
+      box-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+    }
+    .help-tip {
+      text-align: center;
+      color: #FFFF00;
+      margin: 20px 0;
+      font-size: 18px;
+      text-shadow: 0 0 5px #FF00FF;
+    }
+    #close-help-btn {
+      background: linear-gradient(45deg, #00FFFF, #FF00FF);
+      display: block;
+      margin: 0 auto;
+      padding: 15px 30px;
+    }
+    @media (max-width: 768px) {
+      .container {
+        width: 95%;
+        padding: 15px;
+        margin: 10px;
+      }
+      h1 {
+        font-size: 26px;
+        margin-bottom: 15px;
+      }
+      #level-display {
+        font-size: 20px;
+      }
+      #score-display, #error-display {
+        font-size: 16px;
+      }
+      input {
+        font-size: 20px;
+        width: 80px;
+      }
+      button {
+        font-size: 16px;
+        padding: 8px 16px;
+      }
+      #question-container {
+        height: 150px;
+      }
+      .visual-help-container {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+      .square-help {
+        padding: 10px;
+      }
+      .square-grid {
+        max-width: 150px;
+      }
+    }
+
+
+/* Styles de l'écran d'accueil */
+.welcome-content {
+  display: -webkit-flex; 
+  display: flex;
+  -webkit-flex-direction: column;
+          flex-direction: column;
+  -webkit-align-items: center;
+          align-items: center;
+  -webkit-justify-content: flex-start;
+          justify-content: flex-start;
+  max-width: 90%;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(60, 0, 60, 0.9));
+  border: 3px solid #FF00FF;
+  padding: 25px;
+  text-align: center;
+  padding-top: 45px;
+
+min-height: 100vh;
+  overflow-y: auto;
+}
+}
+
+.welcome-text h1 {
+  font-size: 30px;
+  color: #FFFF00;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF;
+}
+.welcome-text {
+  font-size: 18px;
+  line-height: 1.5;
+  margin-bottom: 30px;
+}
+
+.welcome-text p {
+  margin: 15px 0;
+}
+
+.start-button {
+  margin-top: 20px;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.start-button:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 15px #FFFF00);
+}
+
+.start-button:active {
+  transform: scale(0.95);
+}
+
+.thumb-icon {
+  font-size: 70px;
+  display: block;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); filter: drop-shadow(0 0 10px #FF00FF); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 15px #00FFFF); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 10px #FF00FF); }
+}
+
+/* Ajustements pour mobiles */
+@media (max-width: 768px) {
+  .welcome-text {
+    font-size: 16px;
+  }
+  
+  .thumb-icon {
+    font-size: 60px;
+  }
+}
+
+.time-message {
+  font-size: 20px;
+  color: #00FFFF;
+  margin-top: 15px;
+  text-shadow: 0 0 10px #FFFF00;
+  animation: time-flash 2s infinite;
+}
+
+@keyframes time-flash {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+
+  </style>
+</head>
+<body>
+ 
+<!-- Écran d'accueil -->
+<div id="welcome-screen" class="modal" style="display: flex;">
+  <div class="modal-content welcome-content">
+    <div class="welcome-text">
+  <h1 data-i18n="welcome_title">Danseuse ou Danseur, bienvenue !</h1>
+  <p data-i18n="welcome_text_1">7 niveaux t'attendent. Si tu arrives à les franchir un par un, tu découvriras le mot de passe secret.</p>
+  <p data-i18n="welcome_text_2">Donne-le à ton prof ou à tes parents… et tu gagneras un privilège !</p>
+  <p data-i18n="welcome_text_3">Mais souviens-toi : le vrai secret, c'est toi.</p>
+  <p data-i18n="welcome_text_4">Cette appli peut t'aider… mais c'est ton groove et ta persévérance qui feront la différence.</p>
+  <p data-i18n="welcome_text_5">Révise aussi les tables par toi-même, et utilise les stratégies que tu découvriras ici pour progresser.</p>
+  <p data-i18n="welcome_text_6">Et quand tu auras tout terminé, demande à tes parents un code spécial pour défier tes copains en changeant le mot de passe de fin.</p>
+  <p data-i18n="welcome_text_7">Si tu es prêt·e… touche le pouce !</p>
+</div>
+    <div class="start-button" id="start-game-btn">
+      <span class="thumb-icon">👍</span>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+ <!-- Ajout de l'élément audio -->
+    <audio id="background-music" loop>
+        <source src="votre-musique-disco.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'élément audio.
+    </audio>
+
+ <!-- Bouton de contrôle de la musique -->
+    <div class="container">
+    <div class="header">
+        <h1 data-i18n="app_title">Disco Tables de Multiplication</h1>
+        <button id="music-control" class="music-btn">
+            <span id="music-icon">🔊</span>
+        </button>
+    </div>
+ <!-- Dancefloor disco -->
+  <div class="disco-floor"></div>
+
+    
+    <div id="level-display">Niveau 1 - Disco time </div>
+    <div id="score-display">Score : 0</div>
+    <div id="error-display">Erreurs : 0 / 5</div>
+
+    <div id="timer">
+        <div id="timer-bar"></div>
+    </div>
+
+    <!-- ✅ Augmentation de la hauteur ici -->
+    <div id="question-container">
+        <div id="question" data-i18n="ready_message">Prêt à danser avec les tables !</div>
+    </div>
+
+    <div id="answer-container">
+        <input type="number" id="answer-input" placeholder="?" data-i18n="answer_placeholder" autofocus>
+        <button id="submit-btn" data-i18n="validate_btn">Check</button>
+    </div>
+</div>
+
+
+  <!-- Modal Game Over avec bouton d'aide intégré -->
+  <div id="game-over-modal" class="modal">
+  <div class="modal-content">
+      <h2 data-i18n="game_over_title">Game Over</h2>
+      <p data-i18n="game_over_text">Oops ! La musique s'arrête ! Revois bien ces tables :</p>
+      <div id="tables-list" class="table-list"></div>
+      <button id="help-btn" class="help-btn" data-i18n="help_btn" style="display: none;">Aide visuelle</button>
+      <button id="restart-btn" data-i18n="restart_btn">Back to the Dance Floor</button>
+  </div>
+</div>
+
+  <!-- Modal Niveau Terminé -->
+  <div id="level-complete-modal" class="modal">
+    <div class="modal-content">
+      <h2 data-i18n="level_complete_title">Niveau terminé !</h2>
+      <p data-i18n="level_complete_text">Bravo! Tu danses comme un pro sur ces tables!</p>
+      <p><span data-i18n="final_score">Score final</span> : <span id="final-score"></span></p>
+      <p><span data-i18n="errors">Erreurs</span> : <span id="final-errors"></span></p>
+      <button id="next-level-btn" data-i18n="next_level_btn">Next Groove</button>
+    </div>
+  </div>
+
+  <!-- Modal Victoire -->
+  <div id="game-win-modal" class="modal">
+    <div class="modal-content">
+      <h2 class="success-message" id="win-message">Bravo, password : "Disco for ever !"</h2>
+      <p data-i18n="win_text">Tu es la star de la piste de danse des tables de multiplication!</p>
+      <button id="restart-game-btn" data-i18n="restart_game_btn">Restart the Show ?</button>
+    </div>
+  </div>
+
+  <!-- Modal Admin -->
+ <div id="admin-modal" class="modal admin-modal">
+        <div class="modal-content">
+            <span class="close" id="admin-close">&times;</span>
+            <h2 data-i18n="admin_title">Mode DJ</h2>
+            <p data-i18n="admin_text">Modifiez le message de fin du jeu :</p>
+            <textarea id="win-message-input" data-i18n="admin_placeholder" placeholder="Entrez le nouveau message de fin...">Bravo, password : "Disco for ever !"</textarea>
+            
+            <div class="password-container">
+                <input type="password" id="admin-password" data-i18n="admin_password_placeholder" placeholder="DJ Password (option)">
+                <button id="save-message-btn" data-i18n="admin_save_btn">Save</button>
+            </div>
+            
+            <p><small data-i18n="admin_password_info">Laisser le champ du mot de passe vide pour ne pas en définir.</small></p>
+        </div>
+    </div>
+
+  <!-- Modal Aide (visuelle ou stratégie) -->
+  <div id="help-modal" class="modal">
+    <div class="modal-content help-content">
+      <span class="close" id="help-close">&times;</span>
+      <h2 id="help-title" data-i18n="help_title_visual">Aide visuelle - Tables carrées</h2>
+      <div id="help-body">
+        <div class="visual-help-container">
+          <div class="square-help">
+            <h3>2 × 2 = 4</h3>
+            <div class="square-grid grid-2">
+              <div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div>
+            </div>
+          </div>
+          <div class="square-help">
+            <h3>3 × 3 = 9</h3>
+            <div class="square-grid grid-3">
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+            </div>
+          </div>
+          <div class="square-help">
+            <h3>4 × 4 = 16</h3>
+            <div class="square-grid grid-4">
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+            </div>
+          </div>
+          <div class="square-help">
+            <h3>5 × 5 = 25</h3>
+            <div class="square-grid grid-5">
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+            </div>
+          </div>
+          <div class="square-help">
+            <h3>6 × 6 = 36</h3>
+            <div class="square-grid grid-6">
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+              <div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div><div class="square-cell"></div>
+            </div>
+          </div>
+          <div class="square-help">
+            <h3>7 × 7 = 49</h3>
+            <div class="square-grid grid-7">
+              <!-- La grille 7x7 sera générée dynamiquement -->
+            </div>
+          </div>
+          <div class="square-help">
+            <h3>8 × 8 = 64</h3>
+            <div class="square-grid grid-8">
+              <!-- La grille 8x8 sera générée dynamiquement -->
+            </div>
+          </div>
+          <div class="square-help">
+            <h3>9 × 9 = 81</h3>
+            <div class="square-grid grid-9">
+              <!-- La grille 9x9 sera générée dynamiquement -->
+            </div>
+          </div>
+        </div>
+        <p class="help-tip" data-i18n="help_tip">Astuce : Chaque table carrée représente un nombre multiplié par lui-même. Le résultat est le nombre total de carrés dans la grille.</p>
+      </div>
+      <button id="close-help-btn" data-i18n="close_help_btn">Back to Game</button>
+    </div>
+  </div>
+
+  <!-- Inclusion du script d'internationalisation -->
+  <script src="i18n.js"></script>
+
+  <script>
+    // Variables globales
+    const levels = [
+      { name: "Disco time", tables: [], square: true },
+      { name: "Tables : 2 and 4 - Funk", tables: [2, 4] },
+      { name: "Tables : 4 and 8 - Soul", tables: [4, 8] },
+      { name: "Tables : 5 and 10 - Boogie", tables: [5, 10] },
+      { name: "Tables : 3 and 6 - Groove", tables: [3, 6] },
+      { name: "Table of 7 - Hustle", tables: [7] },
+      { name: "Table of 9 - Disco Fever", tables: [9] }
+    ];
+    const discoColors = [
+      '#FF00FF', '#00FFFF', '#FFFF00', '#FF0000', 
+      '#00FF00', '#FF6600', '#FF33CC', '#33CCFF'
+    ];
+// Tableau de couleurs pour les questions (sans rouge ni vert)
+const questionColors = discoColors.filter(color => 
+  color !== '#FF0000' && color !== '#00FF00'
+);
+
+    let currentLevelIndex = 0;
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let errors = 0;
+    let timer;
+    let timeLeft = 6000; // 6 secondes en millisecondes
+    let answeredQuestions = new Set();
+    let winMessage = "Bravo, password\"Disco forever\"";
+    let adminPassword = ""; // Mot de passe admin optionnel
+    let currentLanguage = 'fr'; // Langue par défaut
+
+    
+// Variables pour le chronomètre global
+let globalStartTime = 0;
+let globalTimer = null;
+let totalGameTime = 0;
+let hasGameStarted = false;
+
+
+
+// Éléments DOM
+    const levelDisplay = document.getElementById('level-display');
+    const scoreDisplay = document.getElementById('score-display');
+    const errorDisplay = document.getElementById('error-display');
+    const questionContainer = document.getElementById('question-container');
+    const questionElement = document.getElementById('question');
+    const answerInput = document.getElementById('answer-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const timerBar = document.getElementById('timer-bar');
+    const gameOverModal = document.getElementById('game-over-modal');
+    const levelCompleteModal = document.getElementById('level-complete-modal');
+    const gameWinModal = document.getElementById('game-win-modal');
+    const tablesList = document.getElementById('tables-list');
+    const restartBtn = document.getElementById('restart-btn');
+    const nextLevelBtn = document.getElementById('next-level-btn');
+    const restartGameBtn = document.getElementById('restart-game-btn');
+    const finalScore = document.getElementById('final-score');
+    const finalErrors = document.getElementById('final-errors');
+    const closeBtn = document.querySelector('.close');
+    const winMessageElement = document.getElementById('win-message');
+
+    // Éléments pour le mode admin
+    const adminModal = document.getElementById('admin-modal');
+    const adminCloseBtn = document.getElementById('admin-close');
+    const winMessageInput = document.getElementById('win-message-input');
+    const adminPasswordInput = document.getElementById('admin-password');
+    const saveMessageBtn = document.getElementById('save-message-btn');
+
+    // Éléments pour la musique
+    const backgroundMusic = document.getElementById('background-music');
+    const musicControl = document.getElementById('music-control');
+    const musicIcon = document.getElementById('music-icon');
+    let isMusicPlaying = false;
+
+    // Éléments pour l'aide
+    const helpBtn = document.getElementById('help-btn');
+    const helpModal = document.getElementById('help-modal');
+    const helpCloseBtn = document.getElementById('help-close');
+    const closeHelpBtn = document.getElementById('close-help-btn');
+
+    document.addEventListener('DOMContentLoaded', initGame);
+
+    // Modification pour Cordova - Attendre l'événement deviceready
+    document.addEventListener('deviceready', initGame, false);
+
+    function initGame() {
+      loadSettings();
+      
+      // Détecter la langue du système et initialiser l'internationalisation
+      currentLanguage = detectLanguage();
+
+      // Gestion de l'écran d'accueil
+      const startGameBtn = document.getElementById('start-game-btn');
+      startGameBtn.addEventListener('click', function() {
+        document.getElementById('welcome-screen').style.display = 'none';
+        startGlobalTimer();
+        startLevel();
+      });
+
+
+      submitBtn.addEventListener('click', checkAnswer);
+      answerInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') checkAnswer();
+      });
+      restartBtn.addEventListener('click', restartLevel);
+      nextLevelBtn.addEventListener('click', startNextLevel);
+      restartGameBtn.addEventListener('click', restartGame);
+     
+      adminCloseBtn.addEventListener('click', () => adminModal.style.display = 'none');
+      saveMessageBtn.addEventListener('click', saveAdminSettings);
+      musicControl.addEventListener('click', toggleMusic);
+      helpBtn.addEventListener('click', showHelpModal);
+      helpCloseBtn.addEventListener('click', hideHelpModal);
+      closeHelpBtn.addEventListener('click', hideHelpModal);
+      
+      updateLevelDisplay();
+      createQuestions();
+      // Ne démarrer le niveau que si l'écran d'accueil a été passé
+      if (hasGameStarted) {
+        startLevel();
+      }
+    }
+
+    function toggleMusic() {
+      if (isMusicPlaying) {
+        backgroundMusic.pause();
+        musicIcon.textContent = '🔈';
+        isMusicPlaying = false;
+      } else {
+        backgroundMusic.play().catch(err => console.error("Erreur lors de la lecture audio:", err));
+        musicIcon.textContent = '🔊';
+        isMusicPlaying = true;
+      }
+    }
+    document.addEventListener('click', startMusicOnFirstInteraction, { once: true });
+    function startMusicOnFirstInteraction() {
+      backgroundMusic.volume = 0.3;
+      backgroundMusic.play().catch(err => console.log('Lecture automatique empêchée par le navigateur'));
+      isMusicPlaying = true;
+    }
+    function loadSettings() {
+      const savedMessage = localStorage.getItem('tablesWinMessage');
+      const savedPassword = localStorage.getItem('tablesAdminPassword');
+      if (savedMessage) {
+        winMessage = savedMessage;
+        winMessageElement.textContent = winMessage;
+        winMessageInput.value = winMessage;
+      }
+      if (savedPassword) adminPassword = savedPassword;
+    }
+    function saveAdminSettings() {
+      const newMessage = winMessageInput.value.trim();
+      const newPassword = adminPasswordInput.value;
+      if (newMessage) {
+        winMessage = newMessage;
+        winMessageElement.textContent = winMessage;
+        localStorage.setItem('tablesWinMessage', winMessage);
+      }
+      if (newPassword !== "") {
+        adminPassword = newPassword;
+        localStorage.setItem('tablesAdminPassword', adminPassword);
+      }
+      adminModal.style.display = 'none';
+      alert(getTranslation("alert_settings_saved", currentLanguage));
+    }
+    function showAdminPanel() {
+      if (adminPassword && adminPassword.length > 0) {
+        const userPassword = prompt(getTranslation("alert_password_prompt", currentLanguage));
+        if (userPassword !== adminPassword) {
+          alert(getTranslation("admin_password_error", currentLanguage));
+          return;
+        }
+      }
+      winMessageInput.value = winMessage;
+      adminPasswordInput.value = "";
+      adminModal.style.display = 'flex';
+    }
+    function updateLevelDisplay() {
+      const currentLevel = levels[currentLevelIndex];
+      levelDisplay.textContent = (currentLevelIndex === levels.length - 1)
+        ? `${getTranslation("last_level", currentLanguage)} - ${currentLevel.name}`
+        : `${getTranslation("level", currentLanguage)} ${currentLevelIndex + 1} - ${currentLevel.name}`;
+    }
+
+// Fonction pour démarrer le chronomètre global
+function startGlobalTimer() {
+  globalStartTime = Date.now();
+  hasGameStarted = true;
+}
+
+
+// Fonction pour arrêter le chronomètre global
+function stopGlobalTimer() {
+  if (globalStartTime > 0) {
+    totalGameTime = Math.floor((Date.now() - globalStartTime) / 1000);
+    return formatTime(totalGameTime);
+  }
+  return "00:00";
+}
+
+// Fonction pour formater le temps en mm:ss
+function formatTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+
+    // Création optimisée des questions avec Array.map et flatMap
+    function createQuestions() {
+      const currentLevel = levels[currentLevelIndex];
+      const multiplicands = [2, 3, 4, 5, 6, 7, 8, 9];
+      if (currentLevel.square) {
+        questions = multiplicands.map(num => ({
+          question: `${num} × ${num}`,
+          answer: num * num,
+          id: `${num}x${num}`
+        }));
+      } else {
+        questions = currentLevel.tables.flatMap(table =>
+          multiplicands.map(multiplicand => ({
+            question: `${table} × ${multiplicand}`,
+            answer: table * multiplicand,
+            id: `${table}x${multiplicand}`
+          }))
+        );
+      }
+      questions = shuffleArray(questions);
+      answeredQuestions = new Set();
+    }
+    function shuffleArray(array) {
+      const newArray = [...array];
+      for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+      }
+      return newArray;
+    }
+    function startLevel() {
+      score = 0;
+      errors = 0;
+      currentQuestionIndex = 0;
+      updateScoreDisplay();
+      updateErrorDisplay();
+      showQuestion();
+    }
+    function showQuestion() {
+      if (answeredQuestions.size >= questions.length) {
+        levelComplete();
+        return;
+      }
+      let nextQuestion;
+      let attempts = 0;
+      do {
+        currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+        nextQuestion = questions[currentQuestionIndex];
+        attempts++;
+      } while (answeredQuestions.has(nextQuestion.id) && attempts < questions.length);
+      questionElement.textContent = nextQuestion.question;
+      questionElement.style.color = questionColors[Math.floor(Math.random() * questionColors.length)];
+      questionElement.style.textShadow = `0 0 10px ${questionElement.style.color}`;
+      questionElement.style.fontSize = `${Math.floor(Math.random() * 16) + 24}px`;
+      
+      // Ajouter une position horizontale aléatoire
+      const containerWidth = questionContainer.clientWidth;
+      const questionWidth = questionElement.offsetWidth || 150; // Valeur par défaut si offsetWidth n'est pas encore disponible
+      const maxLeft = containerWidth - questionWidth;
+      const randomLeft = Math.floor(Math.random() * (maxLeft * 0.9));
+      questionElement.style.left = `${randomLeft}px`;
+      
+      questionElement.style.animation = 'none';
+      void questionElement.offsetWidth;
+      questionElement.style.animation = 'fall 6s linear forwards';
+      answerInput.value = '';
+      answerInput.focus();
+      startTimer();
+    }
+    function startTimer() {
+      clearInterval(timer);
+      timeLeft = 6000;
+      timerBar.style.width = '100%';
+      timer = setInterval(() => {
+        timeLeft -= 100;
+        timerBar.style.width = `${(timeLeft / 6000) * 100}%`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          errors++;
+          updateErrorDisplay();
+          if (errors >= 5) {
+            gameOver();
+          } else {
+            showQuestion();
+          }
+        }
+      }, 100);
+    }
+    function updateScoreDisplay() {
+      scoreDisplay.textContent = `${getTranslation("score", currentLanguage)} : ${score}`;
+    }
+    function updateErrorDisplay() {
+      errorDisplay.textContent = `${getTranslation("errors", currentLanguage)} : ${errors} / 5`;
+    }
+    // Mise à jour du bouton d'aide : toujours visible et texte adapté selon le niveau
+    function updateHelpButton() {
+      helpBtn.style.display = 'inline-block';
+      if (currentLevelIndex === 0) {
+        helpBtn.textContent = getTranslation("help_btn", currentLanguage);
+      } else {
+        helpBtn.textContent = getTranslation("help_strategy_btn", currentLanguage);
+      }
+    }
+    function showHelpModal() {
+      if (currentLevelIndex === 0) {
+        document.getElementById('help-title').textContent = getTranslation("help_title_visual", currentLanguage);
+        generateLargeGrids();
+      } else {
+        document.getElementById('help-title').textContent = getTranslation("help_title_strategy", currentLanguage);
+        let strategyHTML = "";
+        switch(currentLevelIndex) {
+          case 1:
+            strategyHTML = getTranslation("strategy_1", currentLanguage);
+            break;
+          case 2:
+            strategyHTML = getTranslation("strategy_2", currentLanguage);
+            break;
+          case 3:
+            strategyHTML = getTranslation("strategy_3", currentLanguage);
+            break;
+          case 4:
+            strategyHTML = getTranslation("strategy_4", currentLanguage);
+            break;
+          case 5:
+            strategyHTML = getTranslation("strategy_5", currentLanguage);
+            break;
+          case 6:
+            strategyHTML = getTranslation("strategy_6", currentLanguage);
+            break;
+          default:
+            strategyHTML = "<p>Aucune stratégie disponible pour ce niveau.</p>";
+        }
+        document.getElementById('help-body').innerHTML = strategyHTML;
+      }
+      helpModal.style.display = 'flex';
+      gameOverModal.style.display = 'none';
+    }
+    function hideHelpModal() {
+      helpModal.style.display = 'none';
+      gameOverModal.style.display = 'flex';
+    }
+    // Génération améliorée des grilles avec DocumentFragment
+    function generateGrid(size, gridSelector) {
+      const gridElement = document.querySelector(gridSelector);
+      if (!gridElement) return;
+      gridElement.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < size * size; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'square-cell';
+        fragment.appendChild(cell);
+      }
+      gridElement.appendChild(fragment);
+    }
+    function generateLargeGrids() {
+      generateGrid(7, '.grid-7');
+      generateGrid(8, '.grid-8');
+      generateGrid(9, '.grid-9');
+    }
+    // Fonction gameOver intégrant l'affichage du bouton d'aide
+    function gameOver() {
+      clearInterval(timer);
+      tablesList.innerHTML = '';
+      const currentLevel = levels[currentLevelIndex];
+      if (currentLevel.square) {
+        for (let i = 2; i <= 9; i++) {
+          const tableItem = document.createElement('div');
+          tableItem.className = 'table-item';
+          tableItem.textContent = `${i} × ${i} = ${i * i}`;
+          tablesList.appendChild(tableItem);
+        }
+      } else {
+        for (const table of currentLevel.tables) {
+          for (let i = 2; i <= 9; i++) {
+            const tableItem = document.createElement('div');
+            tableItem.className = 'table-item';
+            tableItem.textContent = `${table} × ${i} = ${table * i}`;
+            tablesList.appendChild(tableItem);
+          }
+        }
+      }
+      updateHelpButton();
+      gameOverModal.style.display = 'flex';
+    }
+    function restartLevel() {
+      gameOverModal.style.display = 'none';
+      createQuestions();
+      startLevel();
+    }
+    
+function levelComplete() {
+  clearInterval(timer);
+  finalScore.textContent = score;
+  finalErrors.textContent = errors;
+  
+  if (currentLevelIndex === levels.length - 1) {
+    // Stopper le chronomètre global et afficher le temps
+    const totalTime = stopGlobalTimer();
+    
+    // Formatage du temps en fonction de la langue
+    let [minutes, seconds] = totalTime.split(':');
+    const formattedTime = `${minutes} ${getTranslation("time_min", currentLanguage)} ${seconds} ${getTranslation("time_sec", currentLanguage)}`;
+    
+    // Mettre à jour le message de victoire avec le temps
+    const timeMessage = document.createElement('p');
+    timeMessage.innerHTML = `${getTranslation("time_total", currentLanguage)} ${formattedTime}`;
+    timeMessage.className = 'time-message';
+    
+    // Sélectionner l'élément où insérer le message de temps
+    const winMessageParent = winMessageElement.parentNode;
+    
+    // Insérer le message de temps après le message de victoire
+    winMessageParent.insertBefore(timeMessage, winMessageElement.nextSibling);
+    
+    gameWinModal.style.display = 'flex';
+  } else {
+    levelCompleteModal.style.display = 'flex';
+  }
+}
+  function startNextLevel() {
+      levelCompleteModal.style.display = 'none';
+      currentLevelIndex++;
+      updateLevelDisplay();
+      createQuestions();
+      startLevel();
+    }
+   function restartGame() {
+  gameWinModal.style.display = 'none';
+  
+  // Supprimer le message de temps s'il existe
+  const timeMessage = document.querySelector('.time-message');
+  if (timeMessage) {
+    timeMessage.remove();
+  }
+  
+  // Réafficher l'écran d'accueil
+  document.getElementById('welcome-screen').style.display = 'flex';
+  
+  // Réinitialiser le jeu
+  currentLevelIndex = 0;
+  globalStartTime = 0;
+  hasGameStarted = false;
+  updateLevelDisplay();
+  createQuestions();
+}
+
+function checkAnswer() {
+  clearInterval(timer);
+  const currentQuestion = questions[currentQuestionIndex];
+  const userAnswer = answerInput.value.trim();
+  
+  // Codes spéciaux
+  if (userAnswer === "717") {
+    currentLevelIndex = levels.length - 1;
+    updateLevelDisplay();
+    createQuestions();
+    startLevel();
+    return;
+  } else if (userAnswer === "999") {
+    showAdminPanel();
+    return;
+  }
+  
+  if (parseInt(userAnswer) === currentQuestion.answer) {
+    if (!answeredQuestions.has(currentQuestion.id)) {
+      answeredQuestions.add(currentQuestion.id);
+      score++;
+      updateScoreDisplay();
+    }
+    questionElement.style.color = '#00FF00';
+    questionElement.style.textShadow = '0 0 10px #00FF00';
+    setTimeout(showQuestion, 500);
+  } else {
+    errors++;
+    updateErrorDisplay();
+    questionElement.style.color = '#FF0000';
+    questionElement.style.textShadow = '0 0 10px #FF0000';
+    if (errors >= 5) {
+      gameOver();
+    } else {
+      setTimeout(showQuestion, 500);
+    }
+  }
+}
+
+// Version simplifiée de la détection de langue pour éviter les problèmes avec Cordova
+function detectLanguage() {
+  try {
+    // Vérifier d'abord si une langue est déjà enregistrée
+    const savedLang = localStorage.getItem('tablesDiscoLanguage');
+    if (savedLang) {
+      return savedLang;
+    }
+    
+    // Utiliser uniquement navigator.language pour la détection
+    if (navigator.language) {
+      const browserLang = navigator.language.substring(0, 2).toLowerCase();
+      // Si la langue n'est pas le français, utiliser l'anglais
+      if (browserLang !== 'fr') {
+        return 'en';
+      }
+    }
+    
+    // Par défaut, retourner le français
+    return 'fr';
+  } catch (e) {
+    console.error("Erreur lors de la détection de la langue:", e);
+    return 'fr'; // Langue par défaut en cas d'erreur
+  }
+}
+
+// Initialiser l'application avec la détection de langue
+document.addEventListener('deviceready', function() {
+  // Pour les applications Cordova
+  if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+    const lang = detectLanguage();
+    window.i18n.applyTranslations(lang);
+  }
+}, false);
+
+document.addEventListener('DOMContentLoaded', function() {
+  const lang = detectLanguage();
+  applyTranslations(lang);
+});
+
+  </script>
+</body>
+</html>
