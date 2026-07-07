@@ -41,7 +41,20 @@ const translations = {
     "fr": "Si tu es prêt·e… touche le pouce !",
     "en": "If you're ready... touch the thumb!"
   },
-  
+  // Sauvegarde de progression (2.4)
+  "resume_level_btn": {
+    "fr": "Reprendre au niveau",
+    "en": "Resume at level"
+  },
+  "thumb_hint": {
+    "fr": "⏱️ Seul le pouce démarre le chrono : finis tous les niveaux pour battre ton record !",
+    "en": "⏱️ Only the thumb starts the timer: finish all the levels to beat your record!"
+  },
+  "best_time": {
+    "fr": "Meilleur temps",
+    "en": "Best time"
+  },
+
   // Textes de l'interface principale
   "app_title": {
     "fr": "Disco Tables de Multiplication",
