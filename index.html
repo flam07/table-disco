@@ -28,7 +28,8 @@
       min-height: 100vh;
       background: linear-gradient(45deg, #FF00FF, #00FFFF, #FF00FF, #FFFF00);
       background-size: 400% 400%;
-      animation: disco-bg 10s ease infinite;
+      /* 3.1 : identité disco conservée mais ralentie (10s -> 20s, batterie) */
+      animation: disco-bg 20s ease infinite;
       color: #fff;
       text-align: center;
       overflow-y: auto;
@@ -54,7 +55,20 @@
       margin-bottom: 20px;
       font-size: 30px;
       text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF;
-      animation: text-flicker 2s infinite;
+      /* 3.1 : plus de scintillement permanent — le néon est déclenché
+         brièvement en JS sur événement (bonne réponse, niveau terminé) */
+    }
+    .title-flicker {
+      animation: text-flicker 1.2s ease-in-out;
+    }
+    /* 3.1 : flash néon du cadre de question — la récompense doit rester
+       visible clavier ouvert, quand le titre est masqué par le mode compact (3.4) */
+    @keyframes neon-frame-flash {
+      0%, 100% { box-shadow: none; }
+      50% { box-shadow: 0 0 15px #00FFFF, 0 0 30px #FF00FF, inset 0 0 15px rgba(0, 255, 255, 0.4); }
+    }
+    .neon-frame-flash {
+      animation: neon-frame-flash 0.8s ease-in-out;
     }
     @keyframes text-flicker {
       0% { text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF; }
@@ -63,25 +77,42 @@
       75% { text-shadow: 0 0 15px #FF00FF, 0 0 25px #00FFFF; }
       100% { text-shadow: 0 0 10px #FF00FF, 0 0 20px #00FFFF; }
     }
+    /* 3.3 : textes fonctionnels — halos néon remplacés par une ombre portée
+       sobre (lisibilité), couleurs éclaircies au besoin pour le contraste */
     #level-display {
       font-size: 24px;
       margin-bottom: 20px;
       color: #FFFF00;
       font-weight: bold;
-      text-shadow: 0 0 5px #FF00FF;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
     }
     #score-display {
       font-size: 18px;
       margin-bottom: 20px;
       color: #00FFFF;
-      text-shadow: 0 0 5px #FFFF00;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
     }
     #error-display {
       font-size: 18px;
       margin-bottom: 20px;
-      color: #FF00FF;
-      text-shadow: 0 0 5px #00FFFF;
+      color: #FF66FF;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
     }
+    /* Série de bonnes réponses (2.3) : discret près du score, visible dès 3 */
+    #streak-display {
+      display: inline-block;
+      margin-left: 12px;
+      font-size: 16px;
+      color: #FF9933;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    }
+    /* Effet bref au passage d'un palier (3, 5, 8) — pas d'animation permanente */
+    @keyframes streak-pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(var(--pop-scale, 1.4)); text-shadow: 0 0 15px #FF6600, 0 0 25px #FFFF00; }
+      100% { transform: scale(1); }
+    }
+    .streak-pop { animation: streak-pop 0.6s ease; }
     #timer {
       width: 100%;
       height: 10px;
@@ -90,18 +121,14 @@
       margin-bottom: 20px;
       box-shadow: 0 0 10px #00FFFF;
     }
+    /* 3.1 : dégradé statique — le mouvement de la barre (largeur) suffit,
+       le défilement infini du dégradé consommait pour rien */
     #timer-bar {
       height: 100%;
       width: 100%;
       background: linear-gradient(90deg, #FF00FF, #00FFFF, #FFFF00);
-      background-size: 200% 100%;
-      animation: timer-bg 2s linear infinite;
       border-radius: 5px;
       transition: width 0.1s linear;
-    }
-    @keyframes timer-bg {
-      0% { background-position: 0% 50% }
-      100% { background-position: 200% 50% }
     }
     /* Zone question : utilisation de transform pour une animation fluide */
     #question-container {
@@ -124,9 +151,11 @@
       animation: fall 6s linear forwards;
       left: 0; /* Cette propriété sera écrasée par le JavaScript */
     }
+    /* Distance de chute calculée en JS selon la hauteur réelle du conteneur
+       (--fall-distance) ; 150px en secours si var() non supporté dans les keyframes */
     @keyframes fall {
       from { transform: translateY(0); }
-      to { transform: translateY(150px); }
+      to { transform: translateY(var(--fall-distance, 150px)); }
     }
     #answer-container {
       display: flex;
@@ -202,18 +231,6 @@
             resize: vertical;
             background-color: rgba(0, 0, 0, 0.7);
             color: #FFFF00;
-        }
-        
-        .admin-modal .password-container {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .admin-modal .password-container input {
-            flex: 1;
-            margin-right: 10px;
         }
 
 
@@ -457,7 +474,6 @@
 min-height: 100vh;
   overflow-y: auto;
 }
-}
 
 .welcome-text h1 {
   font-size: 30px;
@@ -521,12 +537,74 @@ min-height: 100vh;
   animation: time-flash 2s infinite;
 }
 
+/* Record de temps sur l'accueil (2.4) */
+#best-time-display {
+  font-size: 16px;
+  color: #00FFFF;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+  margin: 12px 0 0;
+}
+
+/* Rappel speed run sous le pouce : discret mais lu au moment du choix */
+#thumb-hint {
+  font-size: 14px;
+  color: #FFFF00;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+  margin: 10px 0 0;
+  max-width: 400px;
+}
+
 @keyframes time-flash {
   0% { opacity: 0.7; }
   50% { opacity: 1; }
   100% { opacity: 0.7; }
 }
 
+/* 3.4 : clavier virtuel ouvert (classe posée en JS via visualViewport) —
+   compacter l'en-tête pour que question, saisie et bouton restent visibles
+   au lieu de laisser le haut de l'écran se faire couper */
+body.keyboard-open .header h1 { display: none; }
+body.keyboard-open #level-display { font-size: 18px; margin-bottom: 6px; }
+body.keyboard-open #score-display,
+body.keyboard-open #error-display { margin-bottom: 6px; }
+body.keyboard-open #timer { margin-bottom: 10px; }
+body.keyboard-open #question-container { margin-bottom: 10px; }
+body.keyboard-open .container { margin: 5px; padding: 10px; }
+body.keyboard-open .disco-floor { display: none; }
+
+/* 3.4 : repli sans JS — mêmes règles quand la hauteur visible est très faible
+   (clavier ouvert sur téléphone, ou paysage bas) */
+@media (max-height: 450px) {
+  .header h1 { display: none; }
+  #level-display { font-size: 18px; margin-bottom: 6px; }
+  #score-display, #error-display { margin-bottom: 6px; }
+  #timer { margin-bottom: 10px; }
+  #question-container { margin-bottom: 10px; }
+  .container { margin: 5px; padding: 10px; }
+  .disco-floor { display: none; }
+}
+
+/* 3.2 : accessibilité — couper toutes les animations infinies et pulsations.
+   La chute de la question est conservée : c'est un repère de jeu (temps restant),
+   pas un décor. Non négociable. */
+@media (prefers-reduced-motion: reduce) {
+  body,
+  h1,
+  .title-flicker,
+  .neon-frame-flash,
+  .thumb-icon,
+  .success-message,
+  .help-btn,
+  .time-message,
+  .streak-pop {
+    animation: none !important;
+  }
+  button:hover,
+  .table-item:hover,
+  .start-button:hover {
+    transform: none;
+  }
+}
 
   </style>
 </head>
@@ -545,9 +623,16 @@ min-height: 100vh;
   <p data-i18n="welcome_text_6">Et quand tu auras tout terminé, demande à tes parents un code spécial pour défier tes copains en changeant le mot de passe de fin.</p>
   <p data-i18n="welcome_text_7">Si tu es prêt·e… touche le pouce !</p>
 </div>
+    <!-- Reprise de progression (2.4) : visible seulement si un niveau > 1 a déjà été atteint ;
+         le pouce reste le départ « du début » (texte du bouton rempli en JS : niveau dynamique) -->
+    <button id="resume-level-btn" style="display: none;"></button>
     <div class="start-button" id="start-game-btn">
       <span class="thumb-icon">👍</span>
     </div>
+    <!-- Rappel speed run : seul un départ au pouce peut battre le record -->
+    <p id="thumb-hint" data-i18n="thumb_hint">⏱️ Seul le pouce démarre le chrono : finis tous les niveaux pour battre ton record !</p>
+    <!-- Record de temps (2.4) : affiché dès l'accueil pour motiver un parcours d'une traite -->
+    <p id="best-time-display" style="display: none;"></p>
   </div>
 </div>
 
@@ -574,7 +659,9 @@ min-height: 100vh;
 
     
     <div id="level-display">Niveau 1 - Disco time </div>
-    <div id="score-display">Score : 0</div>
+    <!-- Le score et la série (2.3) partagent la ligne ; le texte du score est
+         dans un span dédié pour ne pas écraser la série à chaque mise à jour -->
+    <div id="score-display"><span id="score-text">Score : 0</span><span id="streak-display"></span></div>
     <div id="error-display">Erreurs : 0 / 5</div>
 
     <div id="timer">
@@ -631,13 +718,10 @@ min-height: 100vh;
             <h2 data-i18n="admin_title">Mode DJ</h2>
             <p data-i18n="admin_text">Modifiez le message de fin du jeu :</p>
             <textarea id="win-message-input" data-i18n="admin_placeholder" placeholder="Entrez le nouveau message de fin...">Bravo, password : "Disco for ever !"</textarea>
-            
-            <div class="password-container">
-                <input type="password" id="admin-password" data-i18n="admin_password_placeholder" placeholder="DJ Password (option)">
-                <button id="save-message-btn" data-i18n="admin_save_btn">Save</button>
-            </div>
-            
-            <p><small data-i18n="admin_password_info">Laisser le champ du mot de passe vide pour ne pas en définir.</small></p>
+
+            <!-- Mot de passe DJ retiré : il permettait à un élève de verrouiller
+                 définitivement ce panneau (mot de passe oublié = panneau inutilisable) -->
+            <button id="save-message-btn" data-i18n="admin_save_btn">Save</button>
         </div>
     </div>
 
@@ -722,6 +806,21 @@ min-height: 100vh;
   <script src="i18n.js"></script>
 
   <script>
+    // Configuration centralisée (Phase 4) : tous les réglages du jeu au même endroit
+    const CONFIG = {
+      QUESTION_TIME_MS: 6000,        // temps par question (= durée de la chute)
+      MAX_ERRORS: 5,                 // erreurs avant Game Over
+      GOOD_FEEDBACK_MS: 500,         // affichage de l'égalité verte (2.1)
+      CORRECTION_MS: 2000,           // affichage de la correction après échec (2.1)
+      REVIEW_DELAY_MIN: 2,           // une question ratée revient 2 à 3 questions plus loin (2.2)
+      REVIEW_DELAY_MAX: 3,
+      SUCCESSES_AFTER_FAIL: 2,       // réussites exigées pour acquérir une question ratée (2.2)
+      STREAK_THRESHOLDS: [3, 5, 8],  // paliers d'effet de la série (2.3)
+      STREAK_POP_SCALES: [1.4, 1.7, 2], // amplitude du pop à chaque palier
+      CODE_SKIP_TO_LAST: "717",      // code : saut au dernier niveau
+      CODE_ADMIN: "999"              // code : panneau DJ
+    };
+
     // Variables globales
     const levels = [
       { name: "Disco time", tables: [], square: true },
@@ -747,10 +846,31 @@ const questionColors = discoColors.filter(color =>
     let score = 0;
     let errors = 0;
     let timer;
-    let timeLeft = 6000; // 6 secondes en millisecondes
+    let timeLeft = CONFIG.QUESTION_TIME_MS;
     let answeredQuestions = new Set();
+    // Vrai pendant l'affichage d'un feedback (correction ou bonne réponse) :
+    // bloque la validation pour éviter de sauter des questions
+    let isShowingFeedback = false;
+
+    // --- Répétition ciblée des échecs (2.2, Leitner minimal) ---
+    // Une question ratée (erreur ou timeout) est représentée 2 à 3 questions
+    // plus loin et doit être réussie 2 fois pour être acquise ; un nouvel échec
+    // remet ce compteur à 2. Une question jamais ratée est acquise en 1 réussite.
+    // Le score compte les questions acquises (cohérent avec l'existant),
+    // pas les réussites brutes.
+    let questionCounter = 0;   // questions présentées depuis le début du niveau
+    let reviewQueue = [];      // [{ index, dueAt }] : questions ratées à représenter
+    let successesNeeded = {};  // id -> réussites restantes avant acquisition (défaut 1)
+
+    // Série de bonnes réponses consécutives (2.3) : remise à zéro sur erreur
+    // ou timeout ; purement visuelle (aucun effet sur score ou difficulté)
+    let streak = 0;
+
+    // Progression (2.4) : niveau de départ du parcours en cours. 0 = parcours
+    // complet depuis le début ; une reprise ou le code 717 mettent une valeur
+    // supérieure, ce qui exclut le parcours du record de temps
+    let runStartedAtLevel = 0;
     let winMessage = "Bravo, password\"Disco forever\"";
-    let adminPassword = ""; // Mot de passe admin optionnel
     let currentLanguage = 'fr'; // Langue par défaut
 
     
@@ -765,6 +885,8 @@ let hasGameStarted = false;
 // Éléments DOM
     const levelDisplay = document.getElementById('level-display');
     const scoreDisplay = document.getElementById('score-display');
+    const scoreText = document.getElementById('score-text');
+    const streakDisplay = document.getElementById('streak-display');
     const errorDisplay = document.getElementById('error-display');
     const questionContainer = document.getElementById('question-container');
     const questionElement = document.getElementById('question');
@@ -782,12 +904,14 @@ let hasGameStarted = false;
     const finalErrors = document.getElementById('final-errors');
     const closeBtn = document.querySelector('.close');
     const winMessageElement = document.getElementById('win-message');
+    const resumeLevelBtn = document.getElementById('resume-level-btn');
+    const bestTimeDisplay = document.getElementById('best-time-display');
+    const gameTitle = document.querySelector('.header h1');
 
     // Éléments pour le mode admin
     const adminModal = document.getElementById('admin-modal');
     const adminCloseBtn = document.getElementById('admin-close');
     const winMessageInput = document.getElementById('win-message-input');
-    const adminPasswordInput = document.getElementById('admin-password');
     const saveMessageBtn = document.getElementById('save-message-btn');
 
     // Éléments pour la musique
@@ -817,9 +941,31 @@ let hasGameStarted = false;
       const startGameBtn = document.getElementById('start-game-btn');
       startGameBtn.addEventListener('click', function() {
         document.getElementById('welcome-screen').style.display = 'none';
+        // Le pouce = départ du début (2.4) : efface la progression sauvegardée
+        // (elle reflétera la nouvelle partie), mais pas le record de temps —
+        // c'est justement lui qu'un départ au pouce cherche à battre
+        localStorage.removeItem('tablesDiscoMaxLevel');
+        currentLevelIndex = 0;
+        runStartedAtLevel = 0;
+        updateLevelDisplay();
+        createQuestions();
         startGlobalTimer();
         startLevel();
       });
+
+      // Reprise de progression (2.4) : démarrer au début du niveau sauvegardé
+      resumeLevelBtn.addEventListener('click', function() {
+        const savedMax = getSavedMaxLevel();
+        if (savedMax === 0) return;
+        document.getElementById('welcome-screen').style.display = 'none';
+        currentLevelIndex = savedMax;
+        runStartedAtLevel = savedMax; // parcours repris : exclu du record de temps
+        updateLevelDisplay();
+        createQuestions();
+        startGlobalTimer();
+        startLevel();
+      });
+      updateWelcomeProgress();
 
 
       submitBtn.addEventListener('click', checkAnswer);
@@ -859,44 +1005,69 @@ let hasGameStarted = false;
     document.addEventListener('click', startMusicOnFirstInteraction, { once: true });
     function startMusicOnFirstInteraction() {
       backgroundMusic.volume = 0.3;
-      backgroundMusic.play().catch(err => console.log('Lecture automatique empêchée par le navigateur'));
-      isMusicPlaying = true;
+      // Synchroniser l'état et l'icône avec le résultat réel de play()
+      backgroundMusic.play().then(() => {
+        isMusicPlaying = true;
+        musicIcon.textContent = '🔊';
+      }).catch(err => {
+        console.log('Lecture automatique empêchée par le navigateur');
+        isMusicPlaying = false;
+        musicIcon.textContent = '🔈';
+      });
     }
     function loadSettings() {
       const savedMessage = localStorage.getItem('tablesWinMessage');
-      const savedPassword = localStorage.getItem('tablesAdminPassword');
       if (savedMessage) {
         winMessage = savedMessage;
         winMessageElement.textContent = winMessage;
         winMessageInput.value = winMessage;
       }
-      if (savedPassword) adminPassword = savedPassword;
+      // Mot de passe DJ supprimé : purger un éventuel mot de passe posé
+      // par le passé pour débloquer les appareils déjà verrouillés
+      localStorage.removeItem('tablesAdminPassword');
+    }
+
+    // Progression (2.4) : plus haut niveau atteint (index dans levels).
+    // Plafonné à l'avant-dernier niveau : le dernier ne se sauvegarde jamais,
+    // le mot de passe final doit se gagner au moins depuis l'avant-dernier niveau
+    function getSavedMaxLevel() {
+      const saved = parseInt(localStorage.getItem('tablesDiscoMaxLevel'), 10);
+      return (saved > 0) ? Math.min(saved, levels.length - 2) : 0;
+    }
+
+    // Accueil (2.4) : bouton « Reprendre au niveau N » + record de temps à battre
+    function updateWelcomeProgress() {
+      const savedMax = getSavedMaxLevel();
+      if (savedMax > 0) {
+        resumeLevelBtn.textContent = `▶ ${getTranslation("resume_level_btn", currentLanguage)} ${savedMax + 1}`;
+        resumeLevelBtn.style.display = 'inline-block';
+      } else {
+        resumeLevelBtn.style.display = 'none';
+      }
+      // Record visible dès l'accueil pour motiver un nouveau parcours d'une traite
+      const bestTime = parseInt(localStorage.getItem('tablesDiscoBestTime'), 10);
+      if (bestTime > 0) {
+        const [bestMin, bestSec] = formatTime(bestTime).split(':');
+        bestTimeDisplay.textContent = `🏆 ${getTranslation("best_time", currentLanguage)} : ${bestMin} ${getTranslation("time_min", currentLanguage)} ${bestSec} ${getTranslation("time_sec", currentLanguage)}`;
+        bestTimeDisplay.style.display = 'block';
+      } else {
+        bestTimeDisplay.style.display = 'none';
+      }
     }
     function saveAdminSettings() {
       const newMessage = winMessageInput.value.trim();
-      const newPassword = adminPasswordInput.value;
       if (newMessage) {
         winMessage = newMessage;
         winMessageElement.textContent = winMessage;
         localStorage.setItem('tablesWinMessage', winMessage);
       }
-      if (newPassword !== "") {
-        adminPassword = newPassword;
-        localStorage.setItem('tablesAdminPassword', adminPassword);
-      }
       adminModal.style.display = 'none';
       alert(getTranslation("alert_settings_saved", currentLanguage));
     }
+    // Panneau DJ (code 999) désormais sans mot de passe : un mot de passe oublié
+    // ou posé par un élève rendait le panneau définitivement inaccessible
     function showAdminPanel() {
-      if (adminPassword && adminPassword.length > 0) {
-        const userPassword = prompt(getTranslation("alert_password_prompt", currentLanguage));
-        if (userPassword !== adminPassword) {
-          alert(getTranslation("admin_password_error", currentLanguage));
-          return;
-        }
-      }
       winMessageInput.value = winMessage;
-      adminPasswordInput.value = "";
       adminModal.style.display = 'flex';
     }
     function updateLevelDisplay() {
@@ -951,6 +1122,10 @@ function formatTime(totalSeconds) {
       }
       questions = shuffleArray(questions);
       answeredQuestions = new Set();
+      // Réinitialiser l'état de révision (2.2) avec les nouvelles questions
+      questionCounter = 0;
+      reviewQueue = [];
+      successesNeeded = {};
     }
     function shuffleArray(array) {
       const newArray = [...array];
@@ -963,27 +1138,71 @@ function formatTime(totalSeconds) {
     function startLevel() {
       score = 0;
       errors = 0;
+      streak = 0;
       currentQuestionIndex = 0;
       updateScoreDisplay();
       updateErrorDisplay();
+      updateStreakDisplay();
       showQuestion();
     }
+    // Programme la représentation d'une question ratée un peu plus loin (2.2)
+    function scheduleReview(index) {
+      const spread = CONFIG.REVIEW_DELAY_MAX - CONFIG.REVIEW_DELAY_MIN + 1;
+      const delay = CONFIG.REVIEW_DELAY_MIN + Math.floor(Math.random() * spread);
+      // Pas de doublon : un nouvel échec remplace l'échéance existante
+      reviewQueue = reviewQueue.filter(item => item.index !== index);
+      reviewQueue.push({ index, dueAt: questionCounter + delay });
+    }
+
+    // Sélection de la prochaine question (2.2) — isolée pour la testabilité.
+    // Priorité aux questions ratées arrivées à échéance ; sinon rotation normale
+    // en excluant les questions acquises et celles en attente de révision.
+    function pickNextQuestion() {
+      questionCounter++;
+      // 1) Une question à revoir est-elle arrivée à échéance ?
+      const dueIdx = reviewQueue.findIndex(item => item.dueAt <= questionCounter);
+      if (dueIdx !== -1) {
+        return reviewQueue.splice(dueIdx, 1)[0].index;
+      }
+      // 2) Rotation normale (comportement historique), en sautant aussi
+      //    les questions en attente de révision (délai de rétention)
+      const inReview = new Set(reviewQueue.map(item => item.index));
+      let idx = currentQuestionIndex;
+      for (let attempts = 0; attempts < questions.length; attempts++) {
+        idx = (idx + 1) % questions.length;
+        if (!answeredQuestions.has(questions[idx].id) && !inReview.has(idx)) {
+          return idx;
+        }
+      }
+      // 3) Il ne reste que des questions en attente : prendre la plus proche
+      //    (peut alors repasser la même question, faute d'alternative)
+      if (reviewQueue.length > 0) {
+        let earliest = 0;
+        for (let i = 1; i < reviewQueue.length; i++) {
+          if (reviewQueue[i].dueAt < reviewQueue[earliest].dueAt) earliest = i;
+        }
+        return reviewQueue.splice(earliest, 1)[0].index;
+      }
+      return -1; // plus rien à présenter (ne devrait pas arriver : levelComplete testé avant)
+    }
+
     function showQuestion() {
       if (answeredQuestions.size >= questions.length) {
         levelComplete();
         return;
       }
-      let nextQuestion;
-      let attempts = 0;
-      do {
-        currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-        nextQuestion = questions[currentQuestionIndex];
-        attempts++;
-      } while (answeredQuestions.has(nextQuestion.id) && attempts < questions.length);
+      const nextIndex = pickNextQuestion();
+      if (nextIndex === -1) {
+        levelComplete();
+        return;
+      }
+      currentQuestionIndex = nextIndex;
+      const nextQuestion = questions[currentQuestionIndex];
       questionElement.textContent = nextQuestion.question;
       questionElement.style.color = questionColors[Math.floor(Math.random() * questionColors.length)];
       questionElement.style.textShadow = `0 0 10px ${questionElement.style.color}`;
-      questionElement.style.fontSize = `${Math.floor(Math.random() * 16) + 24}px`;
+      // 3.3 : taille aléatoire 32-40px (borne basse relevée pour la lisibilité)
+      questionElement.style.fontSize = `${Math.floor(Math.random() * 9) + 32}px`;
       
       // Ajouter une position horizontale aléatoire
       const containerWidth = questionContainer.clientWidth;
@@ -991,38 +1210,77 @@ function formatTime(totalSeconds) {
       const maxLeft = containerWidth - questionWidth;
       const randomLeft = Math.floor(Math.random() * (maxLeft * 0.9));
       questionElement.style.left = `${randomLeft}px`;
-      
+
+      // Distance de chute = hauteur réelle du conteneur - hauteur de la question
+      // (harmonise desktop 200px et mobile 150px, quelle que soit la taille de police)
+      const fallDistance = questionContainer.clientHeight - questionElement.offsetHeight;
+      questionElement.style.setProperty('--fall-distance', `${fallDistance}px`);
+
       questionElement.style.animation = 'none';
       void questionElement.offsetWidth;
-      questionElement.style.animation = 'fall 6s linear forwards';
+      // Durée de chute alignée sur le temps par question (Phase 4)
+      questionElement.style.animation = `fall ${CONFIG.QUESTION_TIME_MS}ms linear forwards`;
+      // Relancer la chute (elle est mise en pause pendant l'affichage d'une correction)
+      questionElement.style.animationPlayState = 'running';
       answerInput.value = '';
       answerInput.focus();
       startTimer();
     }
     function startTimer() {
       clearInterval(timer);
-      timeLeft = 6000;
+      timeLeft = CONFIG.QUESTION_TIME_MS;
       timerBar.style.width = '100%';
       timer = setInterval(() => {
         timeLeft -= 100;
-        timerBar.style.width = `${(timeLeft / 6000) * 100}%`;
+        timerBar.style.width = `${(timeLeft / CONFIG.QUESTION_TIME_MS) * 100}%`;
         if (timeLeft <= 0) {
           clearInterval(timer);
           errors++;
           updateErrorDisplay();
-          if (errors >= 5) {
+          // Série remise à zéro sur timeout (2.3)
+          streak = 0;
+          updateStreakDisplay();
+          if (errors >= CONFIG.MAX_ERRORS) {
             gameOver();
           } else {
-            showQuestion();
+            // Timeout = échec (2.2) : réussites exigées, représentation 2-3 questions plus loin
+            const failedQuestion = questions[currentQuestionIndex];
+            successesNeeded[failedQuestion.id] = CONFIG.SUCCESSES_AFTER_FAIL;
+            scheduleReview(currentQuestionIndex);
+            // Timeout : montrer la bonne réponse avant de passer à la suite (2.1)
+            showCorrection(failedQuestion);
           }
         }
       }, 100);
     }
     function updateScoreDisplay() {
-      scoreDisplay.textContent = `${getTranslation("score", currentLanguage)} : ${score}`;
+      // Écrire dans le span dédié pour préserver l'affichage de la série (2.3)
+      scoreText.textContent = `${getTranslation("score", currentLanguage)} : ${score}`;
+    }
+    // Récompense néon (3.1) : flash bref du titre ET du cadre de question.
+    // Le cadre est essentiel sur mobile : clavier ouvert, le titre est masqué (3.4)
+    function neonReward() {
+      gameTitle.classList.remove('title-flicker');
+      questionContainer.classList.remove('neon-frame-flash');
+      void gameTitle.offsetWidth; // relancer les animations si déjà jouées
+      gameTitle.classList.add('title-flicker');
+      questionContainer.classList.add('neon-frame-flash');
+    }
+    // Affichage de la série (2.3) : « 🔥 ×N » dès 3 consécutives (symbole + nombre,
+    // indépendant de la langue → pas de clé i18n) ; effet bref aux paliers 3, 5, 8
+    function updateStreakDisplay() {
+      streakDisplay.textContent = streak >= CONFIG.STREAK_THRESHOLDS[0] ? `🔥 ×${streak}` : '';
+      const thresholdIndex = CONFIG.STREAK_THRESHOLDS.indexOf(streak);
+      if (thresholdIndex !== -1) {
+        streakDisplay.style.setProperty('--pop-scale', CONFIG.STREAK_POP_SCALES[thresholdIndex]);
+        // Relancer l'animation même si la classe est déjà posée
+        streakDisplay.classList.remove('streak-pop');
+        void streakDisplay.offsetWidth;
+        streakDisplay.classList.add('streak-pop');
+      }
     }
     function updateErrorDisplay() {
-      errorDisplay.textContent = `${getTranslation("errors", currentLanguage)} : ${errors} / 5`;
+      errorDisplay.textContent = `${getTranslation("errors", currentLanguage)} : ${errors} / ${CONFIG.MAX_ERRORS}`;
     }
     // Mise à jour du bouton d'aide : toujours visible et texte adapté selon le niveau
     function updateHelpButton() {
@@ -1122,6 +1380,8 @@ function formatTime(totalSeconds) {
     
 function levelComplete() {
   clearInterval(timer);
+  // Récompense néon événementielle (3.1)
+  neonReward();
   finalScore.textContent = score;
   finalErrors.textContent = errors;
   
@@ -1133,9 +1393,28 @@ function levelComplete() {
     let [minutes, seconds] = totalTime.split(':');
     const formattedTime = `${minutes} ${getTranslation("time_min", currentLanguage)} ${seconds} ${getTranslation("time_sec", currentLanguage)}`;
     
+    // Progression (2.4) : record de temps réservé aux parcours complets commencés
+    // au niveau 1 (ni reprise, ni code 717) — esprit « speed run » : le chrono
+    // ne compte que si tout est fait d'une traite
+    const isFullRun = (runStartedAtLevel === 0);
+    if (isFullRun) {
+      const previousBest = parseInt(localStorage.getItem('tablesDiscoBestTime'), 10);
+      if (!(previousBest > 0) || totalGameTime < previousBest) {
+        localStorage.setItem('tablesDiscoBestTime', totalGameTime);
+      }
+    }
+    // Parcours repris : pas de « temps total » (trompeur, le chrono repart de la
+    // reprise), seul le record complet est rappelé
+    let timeHTML = isFullRun ? `${getTranslation("time_total", currentLanguage)} ${formattedTime}` : '';
+    const bestTime = parseInt(localStorage.getItem('tablesDiscoBestTime'), 10);
+    if (bestTime > 0) {
+      const [bestMin, bestSec] = formatTime(bestTime).split(':');
+      timeHTML += `${isFullRun ? '<br>' : ''}🏆 ${getTranslation("best_time", currentLanguage)} : ${bestMin} ${getTranslation("time_min", currentLanguage)} ${bestSec} ${getTranslation("time_sec", currentLanguage)}`;
+    }
+
     // Mettre à jour le message de victoire avec le temps
     const timeMessage = document.createElement('p');
-    timeMessage.innerHTML = `${getTranslation("time_total", currentLanguage)} ${formattedTime}`;
+    timeMessage.innerHTML = timeHTML;
     timeMessage.className = 'time-message';
     
     // Sélectionner l'élément où insérer le message de temps
@@ -1152,6 +1431,11 @@ function levelComplete() {
   function startNextLevel() {
       levelCompleteModal.style.display = 'none';
       currentLevelIndex++;
+      // Progression (2.4) : mémoriser le plus haut niveau atteint, sans jamais
+      // enregistrer le dernier (le niveau final doit se rejouer, pas se reprendre)
+      if (currentLevelIndex > getSavedMaxLevel() && currentLevelIndex <= levels.length - 2) {
+        localStorage.setItem('tablesDiscoMaxLevel', currentLevelIndex);
+      }
       updateLevelDisplay();
       createQuestions();
       startLevel();
@@ -1167,52 +1451,118 @@ function levelComplete() {
   
   // Réafficher l'écran d'accueil
   document.getElementById('welcome-screen').style.display = 'flex';
-  
+
   // Réinitialiser le jeu
   currentLevelIndex = 0;
   globalStartTime = 0;
   hasGameStarted = false;
   updateLevelDisplay();
   createQuestions();
+  // Progression (2.4) : la progression a pu évoluer pendant la partie
+  updateWelcomeProgress();
 }
 
-function checkAnswer() {
-  clearInterval(timer);
-  const currentQuestion = questions[currentQuestionIndex];
-  const userAnswer = answerInput.value.trim();
-  
-  // Codes spéciaux
-  if (userAnswer === "717") {
+// Codes spéciaux (Phase 4) : extraits de checkAnswer pour la lisibilité.
+// Renvoie true si la saisie était un code (la validation s'arrête là)
+function handleSpecialCode(userAnswer) {
+  if (userAnswer === CONFIG.CODE_SKIP_TO_LAST) {
     currentLevelIndex = levels.length - 1;
+    runStartedAtLevel = currentLevelIndex; // raccourci : exclu du record de temps (2.4)
     updateLevelDisplay();
     createQuestions();
     startLevel();
-    return;
-  } else if (userAnswer === "999") {
+    return true;
+  }
+  if (userAnswer === CONFIG.CODE_ADMIN) {
     showAdminPanel();
+    return true;
+  }
+  return false;
+}
+
+function checkAnswer() {
+  // Pendant l'affichage d'un feedback, ignorer toute validation
+  if (isShowingFeedback) return;
+
+  const userAnswer = answerInput.value.trim();
+
+  // Champ vide : ne rien valider (ni erreur, ni question suivante),
+  // le timer continue et le champ garde le focus
+  if (userAnswer === '') {
+    answerInput.focus();
     return;
   }
-  
+
+  clearInterval(timer);
+  const currentQuestion = questions[currentQuestionIndex];
+
+  if (handleSpecialCode(userAnswer)) return;
+
   if (parseInt(userAnswer) === currentQuestion.answer) {
-    if (!answeredQuestions.has(currentQuestion.id)) {
-      answeredQuestions.add(currentQuestion.id);
-      score++;
-      updateScoreDisplay();
+    // Série (2.3)
+    streak++;
+    updateStreakDisplay();
+    // Récompense néon événementielle (3.1)
+    neonReward();
+    // Réussite (2.2) : une question jamais ratée est acquise en 1 réussite ;
+    // une question ratée doit encore être réussie successesNeeded fois
+    const remaining = (successesNeeded[currentQuestion.id] || 1) - 1;
+    if (remaining <= 0) {
+      delete successesNeeded[currentQuestion.id];
+      if (!answeredQuestions.has(currentQuestion.id)) {
+        answeredQuestions.add(currentQuestion.id);
+        score++;
+        updateScoreDisplay();
+      }
+    } else {
+      successesNeeded[currentQuestion.id] = remaining;
+      scheduleReview(currentQuestionIndex); // 2e réussite exigée, 2-3 questions plus loin
     }
+    // Bonne réponse : afficher l'égalité complète en vert (comportement conservé)
+    isShowingFeedback = true;
+    questionElement.textContent = `${currentQuestion.question} = ${currentQuestion.answer}`;
     questionElement.style.color = '#00FF00';
     questionElement.style.textShadow = '0 0 10px #00FF00';
-    setTimeout(showQuestion, 500);
+    setTimeout(() => {
+      isShowingFeedback = false;
+      showQuestion();
+    }, CONFIG.GOOD_FEEDBACK_MS);
   } else {
     errors++;
     updateErrorDisplay();
-    questionElement.style.color = '#FF0000';
-    questionElement.style.textShadow = '0 0 10px #FF0000';
-    if (errors >= 5) {
+    // Série remise à zéro sur erreur (2.3)
+    streak = 0;
+    updateStreakDisplay();
+    if (errors >= CONFIG.MAX_ERRORS) {
       gameOver();
     } else {
-      setTimeout(showQuestion, 500);
+      // Échec (2.2) : réussites exigées désormais, représentation 2-3 questions plus loin
+      successesNeeded[currentQuestion.id] = CONFIG.SUCCESSES_AFTER_FAIL;
+      scheduleReview(currentQuestionIndex);
+      // Mauvaise réponse : montrer la correction complète avant la question suivante (2.1)
+      showCorrection(currentQuestion);
     }
   }
+}
+
+// Feedback correctif (2.1) : affiche l'égalité complète (ex. « 7 × 8 = 56 »)
+// bien lisible (jaune, grande taille, recentrée), chute et timer en pause,
+// puis passe à la question suivante. Pas de texte → pas de clé i18n.
+function showCorrection(question) {
+  isShowingFeedback = true;
+  // Figer la chute pour que la correction reste lisible
+  questionElement.style.animationPlayState = 'paused';
+  questionElement.textContent = `${question.question} = ${question.answer}`;
+  questionElement.style.color = '#FFFF00'; // distinct du rouge d'erreur, dans la palette disco
+  questionElement.style.textShadow = '0 0 10px #FF00FF, 0 0 20px #FFFF00';
+  questionElement.style.fontSize = '36px';
+  // Recentrer horizontalement pour la lisibilité
+  const centeredLeft = Math.max(0, (questionContainer.clientWidth - questionElement.offsetWidth) / 2);
+  questionElement.style.left = `${centeredLeft}px`;
+  setTimeout(() => {
+    isShowingFeedback = false;
+    showQuestion();
+  }, CONFIG.CORRECTION_MS);
 }
 
 // Version simplifiée de la détection de langue pour éviter les problèmes avec Cordova
@@ -1254,6 +1604,25 @@ document.addEventListener('DOMContentLoaded', function() {
   const lang = detectLanguage();
   applyTranslations(lang);
 });
+
+// Clavier virtuel (3.4) : quand la hauteur visible chute nettement (clavier
+// ouvert — ou paysage très bas, où compacter est aussi bienvenu), poser la
+// classe keyboard-open qui compacte l'en-tête. visualViewport est précis sur
+// les WebView Android récentes ; repli sur window.resize sinon.
+// À valider sur appareil réel : seul test fiable pour ce point.
+(function setupKeyboardCompact() {
+  let referenceHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  function onViewportChange() {
+    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    if (h > referenceHeight) referenceHeight = h; // rotation / plein écran : recaler la référence
+    document.body.classList.toggle('keyboard-open', h < referenceHeight * 0.75);
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', onViewportChange);
+  } else {
+    window.addEventListener('resize', onViewportChange);
+  }
+})();
 
   </script>
 </body>
